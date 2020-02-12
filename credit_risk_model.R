@@ -40,6 +40,18 @@ plot(loan_data$age, loan_data$annual_inc, xlab = 'age', ylab = 'annual income')
 ind_highage <- which(loan_data_no_outliers$age > 120)
 loan_data_no_outliers <- loan_data_no_outliers[-ind_highage,]
 
+#remove missing data
+summary(loan_data_no_outliers)
+
+#remove rows that employment length (emp_length) are NAs (don't use this when there are too many NAs)
+ind_NA <- which(is.na(loan_data_no_outliers$emp_length))
+loan_data_no_outliers_no_NA <- loan_data_no_outliers[-c(ind_NA),]
+
+#remove the whole column
+loan_data_no_outliers_no_emp <- loan_data_no_outliers
+loan_data_no_outliers_no_emp$emp_length <- NULL
+
+#replace missing data with median (median imputation)
 
 
 
