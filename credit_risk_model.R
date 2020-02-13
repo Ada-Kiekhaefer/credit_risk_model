@@ -56,7 +56,7 @@ summary(loan_data_no_outliers)
 #loan_data_no_outliers_replace <- loan_data_no_outliers
 #loan_data_no_outliers_replace$emp_length[ind_NA] <- median(loan_data_no_outliers$emp_length, na.rm = TRUE)
 
-#keep missing data: coarse classification
+#keep missing data: coarse classification (age)
 loan_data_no_outliers$ir_cat <-  rep(NA, length(loan_data_no_outliers$int_rate))
 loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate <= 8)] <- '0-8'
 loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 8 & 
@@ -64,11 +64,26 @@ loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 8 &
 loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 11 & 
                                      loan_data_no_outliers$int_rate <= 13.5)] <- '11-13.5'
 loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 13.5)] <- '13.5+'
-loan_data_no_outliers$ir_cat[which(is.na(loan_data_no_outliers$int_rate))] <- 'missing'
-
-#
+loan_data_no_outliers$ir_cat[which(is.na(loan_data_no_outliers$int_rate))] <- 'Missing'
+loan_data_no_outliers$ir_cat <- as.factor(loan_data_no_outliers$ir_cat)
+plot(loan_data_no_outliers$ir_cat)
 table(loan_data_no_outliers$ir_cat)
 
+#keep missing data: coarse classification (employment length)
+loan_data_no_outliers$emp_cat <-  rep(NA, length(loan_data_no_outliers$emp_length))
+loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length <= 15)] <- '0-15'
+loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length > 15 & 
+                                     loan_data_no_outliers$emp_length <= 30)] <- '15-30'
+loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length > 30 & 
+                                     loan_data_no_outliers$emp_length <= 45)] <- '30-45'
+loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length > 45)] <- '45+'
+loan_data_no_outliers$emp_cat[which(is.na(loan_data_no_outliers$emp_length))] <- 'Missing'
+loan_data_no_outliers$emp_cat <- as.factor(loan_data_no_outliers$emp_cat)
+plot(loan_data_no_outliers$emp_cat)
+table(loan_data_no_outliers$emp_cat)
+
+loan_data_no_outliers$int_rate <- NULL
+loan_data_no_outliers$emp_length <- NULL
 
 #split data to training set and test set
 set.seed(49)
@@ -77,11 +92,35 @@ training_set <- loan_data_no_outliers[ind_train,]
 test_set <- loan_data_no_outliers[-ind_train,]
 
 #logistic regression
-log_model_ir_cat <- glm(loan_status ~ ir_cat, family = 'binomial', data = training_set)
+ log_model_ir_cat <- glm(loan_status ~ ir_cat, family = 'binomial', data = training_set)
+# the interest rates that are between 8% and 11% compared to the reference category 
+# with interest rates between 0% and 8%, the odds in favor of default change by a multiple of
+# exp(0.6637) = 1.94
+
+#multiple logistic regression
+log_model_multi <- glm(loan_status ~ age + ir_cat + grade + loan_amnt + annual_inc, 
+                       family = 'binomial', data = training_set) 
+summary(log_model_multi)
+#P value: mild significant(.), strong significant(***) 
+
+log_model_age_homeowner <- glm(loan_status ~ age + home_ownership, 
+                               family='binomial', data=training_set)
+
+#predicting one case
+test_case <- as.data.frame(test_set[1,])
+predict_test <- predict(log_model_age_homeowner, newdata = test_case, 
+                        type='response') #return probability
+
+#predict all test set
+predict_test_set <- predict(log_model_age_homeowner, newdata = test_set, type = 'response')
+range(predict_test_set)
+
+#logistic regression with all variables
+log_model_full <- glm(loan_status ~ ., family='binomial', data = training_set)
+
+predict_full <- predict(log_model_full, newdata = test_set, type = 'response')
+range(predict_full)
 
 
 
-
-
-
-
+      
