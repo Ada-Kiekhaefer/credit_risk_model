@@ -44,21 +44,44 @@ plot(loan_data$age, loan_data$annual_inc, xlab = 'age', ylab = 'annual income')
 summary(loan_data_no_outliers)
 
 #remove rows that employment length (emp_length) are NAs (don't use this when there are too many NAs)
-ind_NA <- which(is.na(loan_data_no_outliers$emp_length))
-loan_data_no_outliers_no_NA <- loan_data_no_outliers[-c(ind_NA),]
+#ind_NA <- which(is.na(loan_data_no_outliers$emp_length))
+#ind_NA_int <- which(is.na(loan_data_no_outliers$int_rate))
+#loan_data_no_outliers_no_NA <- loan_data_no_outliers[-c(ind_NA, ind_NA_int),]
 
 #remove the whole column
-loan_data_no_outliers_no_emp <- loan_data_no_outliers
-loan_data_no_outliers_no_emp$emp_length <- NULL
+#loan_data_no_outliers_no_emp <- loan_data_no_outliers
+#loan_data_no_outliers_no_emp$emp_length <- NULL
 
 #replace missing data with median (median imputation)
-loan_data_no_outliers_replace <- loan_data_no_outliers
-loan_data_no_outliers_replace$emp_length[ind_NA] <- median(loan_data_no_outliers$emp_length, na.rm = TRUE)
+#loan_data_no_outliers_replace <- loan_data_no_outliers
+#loan_data_no_outliers_replace$emp_length[ind_NA] <- median(loan_data_no_outliers$emp_length, na.rm = TRUE)
+
+#keep missing data: coarse classification
+loan_data_no_outliers$ir_cat <-  rep(NA, length(loan_data_no_outliers$int_rate))
+loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate <= 8)] <- '0-8'
+loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 8 & 
+                                     loan_data_no_outliers$int_rate <= 11)] <- '8-11'
+loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 11 & 
+                                     loan_data_no_outliers$int_rate <= 13.5)] <- '11-13.5'
+loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 13.5)] <- '13.5+'
+loan_data_no_outliers$ir_cat[which(is.na(loan_data_no_outliers$int_rate))] <- 'missing'
 
 #
-summary(loan_data_no_outliers$int_rate)
+table(loan_data_no_outliers$ir_cat)
+
 
 #split data to training set and test set
 set.seed(49)
-ind_train <- sample(1:nrow())
+ind_train <- sample(1:nrow(loan_data_no_outliers), 2/3 * nrow(loan_data_no_outliers))
+training_set <- loan_data_no_outliers[ind_train,]
+test_set <- loan_data_no_outliers[-ind_train,]
+
+#logistic regression
+log_model_ir_cat <- glm(loan_status ~ ir_cat, family = 'binomial', data = training_set)
+
+
+
+
+
+
 
