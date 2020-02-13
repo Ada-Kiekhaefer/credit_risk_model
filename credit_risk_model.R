@@ -20,11 +20,11 @@ plot(loan_data$annual_inc, ylab = 'annual income') #show an outlier at about 3 m
 
 #cleaning outliers 1) use expert suggestion
 #2) use rule of thump: outlier if bigger or smaller than > Q3 + 1.5*(IQR)
-#ind_outliers <- which(loan_data$annual_inc > 3000000)
-#loan_data_no_outliers <- loan_data[-ind_outliers,]
-cutoff <- quantile(loan_data$annual_inc, 0.75) + 1.5 * IQR(loan_data$annual_inc)
-ind_outliers <- which(loan_data$annual_inc > cutoff)
+ind_outliers <- which(loan_data$annual_inc > 3000000)
 loan_data_no_outliers <- loan_data[-ind_outliers,]
+#cutoff <- quantile(loan_data$annual_inc, 0.75) + 1.5 * IQR(loan_data$annual_inc)
+#ind_outliers <- which(loan_data$annual_inc > cutoff)
+#loan_data_no_outliers <- loan_data[-ind_outliers,]
 hist(loan_data_no_outliers$annual_inc, xlab = 'annual income')
 hist(loan_data_no_outliers$annual_inc, breaks = sqrt(nrow(loan_data_no_outliers)), xlab = 'annual income')
 
@@ -37,8 +37,8 @@ hist1 <- hist(loan_data_no_outliers$loan_amnt, breaks = 100, xlab = 'loan amount
 plot(loan_data$age, loan_data$annual_inc, xlab = 'age', ylab = 'annual income')
 
 #remove age outliers
-ind_highage <- which(loan_data_no_outliers$age > 120)
-loan_data_no_outliers <- loan_data_no_outliers[-ind_highage,]
+#ind_highage <- which(loan_data_no_outliers$age > 120)
+#loan_data_no_outliers <- loan_data_no_outliers[-ind_highage,]
 
 #remove missing data
 summary(loan_data_no_outliers)
@@ -52,6 +52,13 @@ loan_data_no_outliers_no_emp <- loan_data_no_outliers
 loan_data_no_outliers_no_emp$emp_length <- NULL
 
 #replace missing data with median (median imputation)
+loan_data_no_outliers_replace <- loan_data_no_outliers
+loan_data_no_outliers_replace$emp_length[ind_NA] <- median(loan_data_no_outliers$emp_length, na.rm = TRUE)
 
+#
+summary(loan_data_no_outliers$int_rate)
 
+#split data to training set and test set
+set.seed(49)
+ind_train <- sample(1:nrow())
 
