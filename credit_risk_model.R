@@ -84,6 +84,7 @@ table(loan_data_no_outliers$emp_cat)
 
 loan_data_no_outliers$int_rate <- NULL
 loan_data_no_outliers$emp_length <- NULL
+save(loan_data_no_outliers, file = './data/loan_data_no_outliers.RData')
 
 #split data to training set and test set
 set.seed(49)
@@ -120,8 +121,6 @@ log_model_full <- glm(loan_status ~ ., family='binomial', data = training_set)
 
 predict_full <- predict(log_model_full, newdata = test_set, type = 'response')
 range(predict_full) #1.387049e-05 4.747289e-01
-
-save(loan_data_no_outliers, log_model_full, file = './data/data_and_log_model.RData')
 
 ##Model evaluation: set cut off or treshold value
 # Make a binary predictions-vector using a cut-off of 15%
