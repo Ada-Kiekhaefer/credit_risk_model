@@ -119,8 +119,33 @@ range(predict_test_set)
 log_model_full <- glm(loan_status ~ ., family='binomial', data = training_set)
 
 predict_full <- predict(log_model_full, newdata = test_set, type = 'response')
-range(predict_full)
+range(predict_full) #1.387049e-05 4.747289e-01
 
+##Model evaluation: set cut off or treshold value
+# Make a binary predictions-vector using a cut-off of 15%
+pred_cutoff_15 <- ifelse(predict_full > 0.15, 1, 0)
 
+# Construct a confusion matrix
+conf_mat_cutoff_15 <- table(test_set$loan_status, pred_cutoff_15)
+accuracy_cutoff_15 <- sum(diag(conf_mat_cutoff_15))/sum(conf_mat_cutoff_15)
+sensitivity_cutoff_15 <- conf_mat_cutoff_15[2,2]/sum(conf_mat_cutoff_15[2,])
+specificity_cutoff_15 <- conf_mat_cutoff_15[1,1]/sum(conf_mat_cutoff_15[1,])
+
+print(paste('accuracy_cutoff_15 = ', accuracy_cutoff_15))
+print(paste('sensitivity_cutoff_15 = ', sensitivity_cutoff_15))
+print(paste('specificity_cutoff_15 = ', specificity_cutoff_15))
+
+# Make a binary predictions-vector using a cut-off of 10%
+pred_cutoff_20 <- ifelse(predict_full > 0.2, 1, 0)
+
+# Construct a confusion matrix
+conf_mat_cutoff_20 <- table(test_set$loan_status, pred_cutoff_20)
+accuracy_cutoff_20 <- sum(diag(conf_mat_cutoff_20))/sum(conf_mat_cutoff_20)
+sensitivity_cutoff_20 <- conf_mat_cutoff_20[2,2]/sum(conf_mat_cutoff_20[2,])
+specificity_cutoff_20 <- conf_mat_cutoff_20[1,1]/sum(conf_mat_cutoff_20[1,])
+
+print(paste('accuracy_cutoff_20 = ', accuracy_cutoff_20))
+print(paste('sensitivity_cutoff_20 = ', sensitivity_cutoff_20))
+print(paste('specificity_cutoff_20 = ', specificity_cutoff_20))
 
       
