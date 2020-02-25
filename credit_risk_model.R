@@ -58,27 +58,29 @@ summary(loan_data_no_outliers)
 
 #keep missing data: coarse classification (age)
 loan_data_no_outliers$ir_cat <-  rep(NA, length(loan_data_no_outliers$int_rate))
-loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate <= 8)] <- '0-8'
-loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 8 & 
-                                     loan_data_no_outliers$int_rate <= 11)] <- '8-11'
-loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 11 & 
-                                     loan_data_no_outliers$int_rate <= 13.5)] <- '11-13.5'
+loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate <= 5)] <- '0-5'
+loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 5 & 
+                                     loan_data_no_outliers$int_rate <= 10)] <- '5-10'
+loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 10 & 
+                                     loan_data_no_outliers$int_rate <= 13.5)] <- '10-13.5'
 loan_data_no_outliers$ir_cat[which(loan_data_no_outliers$int_rate > 13.5)] <- '13.5+'
 loan_data_no_outliers$ir_cat[which(is.na(loan_data_no_outliers$int_rate))] <- 'Missing'
 loan_data_no_outliers$ir_cat <- as.factor(loan_data_no_outliers$ir_cat)
+levels(loan_data_no_outliers$ir_cat) <- c('0-5','5-10','10-13.5','13.5+','Missing')
 plot(loan_data_no_outliers$ir_cat)
 table(loan_data_no_outliers$ir_cat)
 
 #keep missing data: coarse classification (employment length)
 loan_data_no_outliers$emp_cat <-  rep(NA, length(loan_data_no_outliers$emp_length))
-loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length <= 15)] <- '0-15'
-loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length > 15 & 
-                                     loan_data_no_outliers$emp_length <= 30)] <- '15-30'
-loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length > 30 & 
-                                     loan_data_no_outliers$emp_length <= 45)] <- '30-45'
-loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length > 45)] <- '45+'
+loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length <= 2)] <- '0-2'
+loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length > 2 & 
+                                     loan_data_no_outliers$emp_length <= 10)] <- '2-10'
+loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length > 10 & 
+                                     loan_data_no_outliers$emp_length <= 20)] <- '10-20'
+loan_data_no_outliers$emp_cat[which(loan_data_no_outliers$emp_length > 20)] <- '20+'
 loan_data_no_outliers$emp_cat[which(is.na(loan_data_no_outliers$emp_length))] <- 'Missing'
 loan_data_no_outliers$emp_cat <- as.factor(loan_data_no_outliers$emp_cat)
+levels(loan_data_no_outliers$emp_cat) <- c('0-2','2-10','10-20','20+','Missing')
 plot(loan_data_no_outliers$emp_cat)
 table(loan_data_no_outliers$emp_cat)
 

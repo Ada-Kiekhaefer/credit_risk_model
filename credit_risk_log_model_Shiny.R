@@ -12,12 +12,12 @@ ui <- fluidPage(
     sidebarPanel(
   textInput('borrower_age', 'Enter age: '),
   textInput('borrower_annual_income', 'Enter annual income: '),
-  textInput('loan_amount', 'Enter loan amount: '),
+  textInput('loan_amount', 'Enter loan amount (500 - 35000 dollars): '),
   selectInput("employment_length", label = "Choose employment length: ", 
-              choices = list("0-15 years" = "0-15",
-                             "15-30 years" = "15-30",
-                             "30-45 years" = "30-45",
-                             "45+ years" = "45+"), selected = 1),  
+              choices = list("0-2 years" = "0-2",
+                             "2-10 years" = "2-10",
+                             "10-20 years" = "10-20",
+                             "20+ years" = "20+"), selected = 1),  
   selectInput("home_owner", label = "Home ownership status: ", 
               choices = list("Mortgage" = "MORTGAGE",
                              "Own" = "OWN",
@@ -31,6 +31,12 @@ ui <- fluidPage(
                              "E" = "E",
                              "F" = "F",
                              "G" = "G"), selected = 1),
+  selectInput("interest_rate", label = "Interest rate: ", 
+              choices = list("0-5 %" = "0-5",
+                             "5-10 %" = "5-10",
+                             "10-13.5 %" = "10-13.5",
+                             "13+ %" = "13+",
+                             "Missing" = "Missing"), selected = 1),  
   selectInput("indepvar", label = "Explanatory variables histrogram: ", 
               choices = list("annual income" = "annual_inc",
                              "loan amount" = "loan_amnt",
@@ -47,6 +53,7 @@ ui <- fluidPage(
   textOutput('emp_length'),
   textOutput('home'),
   textOutput('credit'),
+  textOutput('interest'),
   textOutput('prediction'),
   plotOutput('distribution1'),
   plotOutput('distribution2'),
@@ -73,6 +80,9 @@ server <- function(input, output){
   output$credit <- renderText({
     paste('Credit grade : ', input$credit_grade)
   })
+  output$interest <- renderText({
+    paste('Interest rate : ', input$interest_rate)
+  })
   
   # Histogram output var 1
   output$distribution1 <- renderPlot({
@@ -92,14 +102,15 @@ server <- function(input, output){
   })
   
   output$prediction <- renderText({
-    mod <- glm(loan_status ~ age + annual_inc + loan_amnt + emp_cat + home_ownership + grade, 
+    mod <- glm(loan_status ~ age + annual_inc + loan_amnt + emp_cat + home_ownership + grade +ir_cat, 
                family = 'binomial', data = loan_data_no_outliers)
     newdata <- data.frame(age=as.numeric(input$borrower_age), 
                           annual_inc = as.numeric(input$borrower_annual_income),
                           loan_amnt = as.numeric(input$loan_amount),
                           emp_cat = as.factor(input$employment_length),
                           home_ownership = as.factor(input$home_owner),
-                          grade = as.factor(input$credit_grade))
+                          grade = as.factor(input$credit_grade),
+                          ir_cat = as.factor(input$interest_rate))
     p <- predict(mod, newdata = newdata, type = 'response')
     p_cutoff_15 <- ifelse(p > 0.15, 'Default', 'Non default')
     approval <- ifelse(p > 0.15, 'Not approved', 'Approved')
