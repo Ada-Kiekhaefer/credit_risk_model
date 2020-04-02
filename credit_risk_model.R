@@ -157,14 +157,14 @@ print(paste('specificity_cutoff_20 = ', specificity_cutoff_20))
 
 # Decision tree model -----------------------------------------------------
 library(rpart)
-model_credit_tree <- rpart(loan_status ~ ., 
-                                       method = 'class', 
-                                       data = training_set,
-                                       control = rpart.control(cp = 0.001))
-
-plot(model_credit_tree, uniform = TRUE)
-text(model_credit_tree)
-#Error in plot.rpart(model_credit_tree, uniform = TRUE) : fit is not a tree, just a root
+# model_credit_tree <- rpart(loan_status ~ ., 
+#                                        method = 'class', 
+#                                        data = training_set,
+#                                        control = rpart.control(cp = 0.001))
+# 
+# plot(model_credit_tree, uniform = TRUE)
+# text(model_credit_tree)
+# Error in plot.rpart(model_credit_tree, uniform = TRUE) : fit is not a tree, just a root
 
 
 #credit risk data are unbalance (little default compare to non-default)
@@ -190,6 +190,20 @@ model_credit_tree_undersample <- rpart(loan_status ~ .,
 #overall lack of fit for any split. If cp is not met, 
 #further splits will no longer be pursued. cp's default value is 0.01, 
 #but for complex problems, it is advised to relax cp.
-
 plot(model_credit_tree_undersample, uniform = TRUE)
 text(model_credit_tree_undersample)
+
+#change prior probability to adjust the importance of misclassifications for each class
+model_tree_prior <- rpart(loan_status ~ .,
+                          method = 'class',
+                          parms = list(prior = c(0.7, 0.3)),
+                          control = rpart.control(cp = 0.001),
+                          data = training_set
+                          )
+
+plot(model_tree_prior, uniform = TRUE)
+text(model_tree_prior)
+
+# include a loss matrix, heavily pernalize misclassifying a default as a non-default
+
+
