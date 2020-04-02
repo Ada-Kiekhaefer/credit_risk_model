@@ -255,3 +255,48 @@ plotcp(model_tree_loss)
 ptree_loss <- prune(model_tree_loss, cp = 0.001)
 
 prp(ptree_loss)
+
+##weighted tree
+#create weight vector: contains weights of 1 for the non-defaults 
+#and weights of 3 for defaults 
+weight_vec <- rep(1,nrow(training_set)) 
+ind_default <- which(training_set$loan_status == 1)
+weight_vec[ind_default] <- 3
+
+#minsplit : minimum number of splits that are allowed in a node 
+#minbucket :  minimum number of observations allowed in leaf nodes 
+set.seed(123)
+model_tree_weights <- rpart(loan_status ~ .,
+                            method = 'class',
+                            weights = weight_vec,
+                            control = rpart.control(minsplit = 5, 
+                                                    minbucket = 2, 
+                                                    cp = 0.001),
+                            data = training_set)
+prp(model_tree_weights)
+
+plotcp(model_tree_weights)
+printcp(model_tree_weights)
+ind_weight <- which.min(model_tree_weights$cptable[,'xerror'])
+min_cp_weight <- model_tree_weights$cptable[ind_weight, 'CP']
+
+ptree_weights <- prune(model_tree_weights, cp = min_cp_weight)
+prp(ptree_weights, extra = 1)
+
+## make prediction
+pred_undersample <- predict(ptree_undersample, newdata = test_set, type = 'class')
+pred_prior <- predict(ptree_prior, newdata = test_set, type = 'class')
+pred_loss <- predict(ptree_loss, newdata = test_set, type = 'class')
+pred_weights <- predict(ptree_weights, newdata = test_set, type = 'class')
+
+#confusion matrix
+confmat_undersample <- table(test_set$loan_status, pred_undersample)
+confmat_prior <- table(test_set$loan_status, pred_prior)
+confmat_loss <- table(test_set$loan_status, pred_loss)
+confmat_weight <- table(test_set$loan_status, pred_weights)
+
+#compute accuracies
+acc_undersample <- sum(diag(confmat_undersample))/nrow(test_set)
+acc_prior <- sum(diag(confmat_prior))/nrow(test_set)
+acc_loss <- sum(diag(confmat_loss))/nrow(test_set)
+acc_weight <- sum(diag(confmat_weight))/nrow(test_set)
