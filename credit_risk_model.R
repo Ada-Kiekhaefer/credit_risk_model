@@ -18,9 +18,13 @@ hist(loan_data$int_rate, main = 'Histogram of interest rate', xlab = 'Interest r
 #plots of annual income
 plot(loan_data$annual_inc, ylab = 'annual income') #show an outlier at about 3 million dollars
 
+#change loan_status to categorical variable
+loan_data$loan_status <- as.factor(loan_data$loan_status)
+
+
 #cleaning outliers 1) use expert suggestion
 #2) use rule of thump: outlier if bigger or smaller than > Q3 + 1.5*(IQR)
-ind_outliers <- which(loan_data$annual_inc > 3000000)
+ind_outliers <- which(loan_data$annual_inc > 2000000)
 loan_data_no_outliers <- loan_data[-ind_outliers,]
 #cutoff <- quantile(loan_data$annual_inc, 0.75) + 1.5 * IQR(loan_data$annual_inc)
 #ind_outliers <- which(loan_data$annual_inc > cutoff)
@@ -151,4 +155,41 @@ print(paste('accuracy_cutoff_20 = ', accuracy_cutoff_20))
 print(paste('sensitivity_cutoff_20 = ', sensitivity_cutoff_20))
 print(paste('specificity_cutoff_20 = ', specificity_cutoff_20))
 
-      
+# Decision tree model -----------------------------------------------------
+library(rpart)
+model_credit_tree <- rpart(loan_status ~ ., 
+                                       method = 'class', 
+                                       data = training_set,
+                                       control = rpart.control(cp = 0.001))
+
+plot(model_credit_tree, uniform = TRUE)
+text(model_credit_tree)
+#Error in plot.rpart(model_credit_tree, uniform = TRUE) : fit is not a tree, just a root
+
+
+#credit risk data are unbalance (little default compare to non-default)
+#Three technique to overcome unbalance 
+#1) undersampling the over-representated group (non-default) 
+#2) Change prior probability
+#3) include a loss matrix
+
+#undersampling training data
+set.seed(98)
+ind_default <- which(training_set$loan_status == 1)
+ind_non_default <- which(training_set$loan_status == 0)
+ind_non_default_undersample <- sample(ind_non_default, 2 * length(ind_default))
+training_set_undersample <- loan_data_no_outliers[c(ind_default,ind_non_default_undersample),]
+
+#decision tree model
+model_credit_tree_undersample <- rpart(loan_status ~ ., 
+                    method = 'class', 
+                    data = training_set_undersample,
+                    control = rpart.control(cp = 0.001))
+
+#cp, the complexity parameter, is the threshold value for a decrease in 
+#overall lack of fit for any split. If cp is not met, 
+#further splits will no longer be pursued. cp's default value is 0.01, 
+#but for complex problems, it is advised to relax cp.
+
+plot(model_credit_tree_undersample, uniform = TRUE)
+text(model_credit_tree_undersample)
