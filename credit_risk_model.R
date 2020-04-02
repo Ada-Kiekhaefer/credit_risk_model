@@ -183,8 +183,9 @@ training_set_undersample <- loan_data_no_outliers[c(ind_default,ind_non_default_
 #decision tree model
 model_credit_tree_undersample <- rpart(loan_status ~ ., 
                     method = 'class', 
-                    data = training_set_undersample,
-                    control = rpart.control(cp = 0.001))
+#                    control = rpart.control(cp = 0.001),
+                    control = rpart.control(cp = 0.0005),
+                    data = training_set_undersample)
 
 #cp, the complexity parameter, is the threshold value for a decrease in 
 #overall lack of fit for any split. If cp is not met, 
@@ -192,6 +193,22 @@ model_credit_tree_undersample <- rpart(loan_status ~ .,
 #but for complex problems, it is advised to relax cp.
 plot(model_credit_tree_undersample, uniform = TRUE)
 text(model_credit_tree_undersample)
+
+## pruning decision tree
+# too big trees are hard to interpret and may lead to overfitting
+
+# minimize xerror (cross validated error of the decision tree)
+printcp(model_credit_tree_undersample)
+plotcp(model_credit_tree_undersample)
+
+ptree_undersample <- prune(model_credit_tree_undersample, cp = 0.001)
+plot(ptree_undersample, uniform = TRUE)
+text(ptree_undersample)
+# text(ptree_undersample, use.n = TRUE)
+
+library(rpart.plot)
+prp(ptree_undersample)
+
 
 #change prior probability to adjust the importance of misclassifications for each class
 # parms = list(prior=c(non_default_proportion, default_proportion))
@@ -206,17 +223,35 @@ model_tree_prior <- rpart(loan_status ~ .,
 plot(model_tree_prior, uniform = TRUE)
 text(model_tree_prior)
 
+printcp(model_tree_prior)
+plotcp(model_tree_prior)
+
+ind_prior <- which.min(model_tree_prior$cptable[,'xerror'])
+min_cp_prior <- model_tree_prior$cptable[ind_prior,'CP']
+
+ptree_prior <- prune(model_tree_prior, cp = min_cp_prior)
+prp(ptree_prior)
+
 # include a loss matrix, heavily pernalize misclassifying a default as a non-default
 # parms = list(loss = matrix(c(0, cost_def_as_nondef, cost_nondef_as_def, 0), ncol=2))
 # construct a 2x2-matrix with changed loss penalties off-diagonal. 
 #The default loss matrix is all ones off-diagonal.
-
+set.seed(123)
 model_tree_loss <- rpart(loan_status ~ ., 
                          method = 'class',
                          parms = list(loss = matrix(c(0, 10, 1, 0), ncol = 2)),
-                         control = rpart.control(cp = 0.001),
+                         control = rpart.control(cp = 0.0005),
                          data = training_set
                          )
 
 plot(model_tree_loss, uniform = TRUE)
 text(model_tree_loss)
+
+printcp(model_tree_loss)
+plotcp(model_tree_loss)
+
+#ind_loss <- which.min(model_tree_loss$cptable[,'xerror'])
+#min_cp_loss <- model_tree_loss$cptable[ind_loss, 'CP']
+ptree_loss <- prune(model_tree_loss, cp = 0.001)
+
+prp(ptree_loss)
