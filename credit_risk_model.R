@@ -194,6 +194,8 @@ plot(model_credit_tree_undersample, uniform = TRUE)
 text(model_credit_tree_undersample)
 
 #change prior probability to adjust the importance of misclassifications for each class
+# parms = list(prior=c(non_default_proportion, default_proportion))
+
 model_tree_prior <- rpart(loan_status ~ .,
                           method = 'class',
                           parms = list(prior = c(0.7, 0.3)),
@@ -205,5 +207,16 @@ plot(model_tree_prior, uniform = TRUE)
 text(model_tree_prior)
 
 # include a loss matrix, heavily pernalize misclassifying a default as a non-default
+# parms = list(loss = matrix(c(0, cost_def_as_nondef, cost_nondef_as_def, 0), ncol=2))
+# construct a 2x2-matrix with changed loss penalties off-diagonal. 
+#The default loss matrix is all ones off-diagonal.
 
+model_tree_loss <- rpart(loan_status ~ ., 
+                         method = 'class',
+                         parms = list(loss = matrix(c(0, 10, 1, 0), ncol = 2)),
+                         control = rpart.control(cp = 0.001),
+                         data = training_set
+                         )
 
+plot(model_tree_loss, uniform = TRUE)
+text(model_tree_loss)
