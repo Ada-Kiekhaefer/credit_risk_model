@@ -300,3 +300,17 @@ acc_undersample <- sum(diag(confmat_undersample))/nrow(test_set)
 acc_prior <- sum(diag(confmat_prior))/nrow(test_set)
 acc_loss <- sum(diag(confmat_loss))/nrow(test_set)
 acc_weight <- sum(diag(confmat_weight))/nrow(test_set)
+
+#compute sensitivity
+sensitivity_undersample <- confmat_undersample[2,2]/sum(confmat_undersample[2,])
+sensitivity_prior <- confmat_prior[2,2]/sum(confmat_prior[2,])
+sensitivity_loss <- confmat_loss[2,2]/sum(confmat_loss[2,])
+sensitivity_weight <- confmat_weight[2,2]/sum(confmat_weight[2,])
+
+#compute specificity
+specificity_undersample <- confmat_undersample[1,1]/sum(confmat_undersample[1,])
+specificity_prior <- confmat_prior[1,1]/sum(confmat_prior[1,])
+specificity_loss <- confmat_loss[1,1]/sum(confmat_loss[1,])
+specificity_weight <- confmat_weight[1,1]/sum(confmat_weight[1,])
+
+
